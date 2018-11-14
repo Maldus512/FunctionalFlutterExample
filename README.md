@@ -1,6 +1,6 @@
 # functional
 
-A new Flutter project.
+Simple flutter app to showcase a functional approach.
 
 ## Getting Started
 
