@@ -2,8 +2,30 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'controlPanel.dart';
 
-
 void main() => runApp(MyApp());
+
+//InheritedWidget to access the state of my app, all in one place
+class AppCentralState extends InheritedWidget {
+  final UsefulDevice device;
+  final Function disconnectCallback;
+  final Function(bool) updateStateCallback;
+
+  AppCentralState(
+      {this.device,
+      this.disconnectCallback,
+      this.updateStateCallback,
+      Widget child})
+      : super(child: child);
+
+  @override
+  bool updateShouldNotify(InheritedWidget oldWidget) {
+    return true;
+  }
+
+  static AppCentralState of(BuildContext context) {
+    return context.inheritFromWidgetOfExactType(AppCentralState);
+  }
+}
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
@@ -52,20 +74,25 @@ class _HomePageState extends State<HomePage> {
 
   void _disconnect() {
     setState(() {
-          device.connection = DeviceConnectionState.Disconnected;
-        });
+      device.connection = DeviceConnectionState.Disconnected;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Functional example"),
-      ),
-      body: Center(child: _buildMainContent()),
-    );
+        appBar: AppBar(
+          title: Text("Functional example"),
+        ),
+        body: AppCentralState(
+          device: device,
+          disconnectCallback: _disconnect,
+          updateStateCallback: _updateState,
+          child: Center(child: _buildMainContent()),
+        ));
   }
 
+// Function that selects which layout to show at any given time, based on the current state
   Widget _buildMainContent() {
     switch (device.connection) {
       case DeviceConnectionState.Disconnected:
@@ -80,8 +107,9 @@ class _HomePageState extends State<HomePage> {
           ],
         );
       case DeviceConnectionState.Connected:
-        return controlPanel(device.state, _updateState, _disconnect);
-        //return ControlPanel(device);
+        return StatelessControlPanel();
+      //return controlPanel(device.state, _updateState, _disconnect);
+      //return ControlPanel(device);
       case DeviceConnectionState.Connecting:
         return Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,

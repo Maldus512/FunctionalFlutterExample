@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'main.dart';
 
 enum DeviceConnectionState { Disconnected, Connecting, Connected }
 
@@ -8,6 +9,7 @@ class UsefulDevice {
   DeviceConnectionState connection = DeviceConnectionState.Disconnected;
 }
 
+// Approach of a Widget-returning function
 Widget controlPanel(bool state, Function(bool) updateStateCallback,
     Function disconnectCallback) {
   return Column(
@@ -27,9 +29,34 @@ Widget controlPanel(bool state, Function(bool) updateStateCallback,
   );
 }
 
+//Approach of a StatelessWidget + InheritedWidget
+class StatelessControlPanel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final state = AppCentralState.of(context);
+    return Column(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      Text("Connected"),
+      RaisedButton(
+        child: Text(state.device.state ? "ON" : "OFF"),
+        color: state.device.state ? Colors.green : Colors.red,
+        onPressed: () => state.updateStateCallback(!state.device.state),
+      ),
+      FlatButton(
+        child: Text("Disconnect"),
+        onPressed: state.disconnectCallback,
+      ),
+    ],
+  );
+  }
+}
+
+
+//Approach of a StatefulWidget
 class ControlPanel extends StatefulWidget {
   ControlPanel(this.device, {Key key}) : super(key: key);
-  UsefulDevice device;
+  final UsefulDevice device;
 
   @override
   _ControlPanelState createState() => _ControlPanelState(device);
